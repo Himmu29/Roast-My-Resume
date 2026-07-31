@@ -71,11 +71,18 @@ export function VoiceRoastWidget({ analysis }: VoiceRoastWidgetProps) {
       });
 
       vapiInstance.on('message', (msg: any) => {
-        if (msg?.type === 'transcript' && msg?.transcript) {
-          setTranscripts((prev) => [
-            ...prev,
-            { role: msg.role || 'assistant', text: msg.transcript },
-          ]);
+        // Handle final transcript messages only to prevent duplicate line output
+        if (msg?.type === 'transcript' && msg?.transcript && msg?.transcriptType === 'final') {
+          setTranscripts((prev) => {
+            const lastMsg = prev[prev.length - 1];
+            if (lastMsg && lastMsg.text === msg.transcript) {
+              return prev;
+            }
+            return [
+              ...prev,
+              { role: msg.role || 'assistant', text: msg.transcript },
+            ];
+          });
         }
       });
 
