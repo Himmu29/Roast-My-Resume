@@ -1,0 +1,88 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: 'Geist', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: 'Geist Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, monospace;
+}
+
+/* Background Grid Pattern inspired by Vercel */
+.bg-grid-pattern {
+  background-size: 32px 32px;
+  background-image: 
+    linear-gradient(to right, rgba(0, 0, 0, 0.03) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(0, 0, 0, 0.03) 1px, transparent 1px);
+}
+
+/* Hero Mesh Gradient Glow */
+.hero-glow-cyan {
+  background: radial-gradient(circle at 50% 20%, rgba(0, 223, 216, 0.15), rgba(0, 124, 240, 0.08) 40%, transparent 70%);
+}
+
+.hero-glow-violet {
+  background: radial-gradient(circle at 50% 30%, rgba(121, 40, 202, 0.12), rgba(255, 0, 128, 0.06) 45%, transparent 75%);
+}
+
+/* Multi-Color Gradient Text Utilities */
+.text-gradient-hero {
+  background: linear-gradient(135deg, #0070f3 0%, #00dfd8 50%, #7928ca 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.text-gradient-roast {
+  background: linear-gradient(135deg, #7928ca 0%, #ff0080 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.text-gradient-ats {
+  background: linear-gradient(135deg, #ff4d4d 0%, #f9cb28 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Vercel Crisp Card Base */
+.vercel-card {
+  background-color: #ffffff;
+  border: 1px solid #ebebeb;
+  border-radius: 16px;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.vercel-card:hover {
+  border-color: #d4d4d4;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.06);
+}
+
+.vercel-card-soft {
+  background-color: #fafafa;
+  border: 1px solid #ebebeb;
+  border-radius: 16px;
+}
+
+/* Monospace Badges */
+.badge-mono {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: -0.2px;
+  text-transform: uppercase;
+  padding: 2px 8px;
+  border-radius: 9999px;
+  font-weight: 500;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #fafafa;
+}
+::-webkit-scrollbar-thumb {
+  background: #d4d4d4;
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #a3a3a3;
+}

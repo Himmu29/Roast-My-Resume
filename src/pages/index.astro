@@ -1,11 +1,90 @@
 ---
-import Welcome from '../components/Welcome.astro';
 import Layout from '../layouts/Layout.astro';
-
-// Welcome to Astro! Wondering what to do next? Check out the Astro documentation at https://docs.astro.build
-// Don't want to use any of this? Delete everything in this file, the `assets`, `components`, and `layouts` directories, and start fresh.
+import Header from '../components/layout/Header.astro';
+import Footer from '../components/layout/Footer.astro';
+import { FileDropzone } from '../components/upload/FileDropzone';
+import { Flame, Sparkles, ShieldCheck, Mic, Zap, CheckCircle } from 'lucide-react';
 ---
 
 <Layout>
-	<Welcome />
+  <Header />
+
+  <main class="flex-1 w-full bg-grid-pattern relative overflow-hidden">
+    <!-- Hero Radial Mesh Glow -->
+    <div class="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] hero-glow-cyan pointer-events-none -z-10"></div>
+
+    <div class="max-w-5xl mx-auto px-2 sm:px-4 py-8 sm:py-16 space-y-8">
+      <!-- Hero Header Section -->
+      <section class="text-center space-y-6 max-w-3xl mx-auto">
+        <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-neutral-200 bg-white/90 shadow-xs text-xs font-mono text-neutral-700 backdrop-blur-md">
+          <span>AI Resume Roaster & Interactive Voice Coach</span>
+        </div>
+
+        <h1 class="text-4xl sm:text-6xl font-extrabold tracking-tight text-neutral-900 leading-[1.1]">
+          Roast My Resume.<br />
+          <span class="text-gradient-hero">Roasted. Fixed. Hired.</span>
+        </h1>
+
+        <p className="text-base sm:text-lg text-neutral-600 max-w-2xl mx-auto leading-relaxed font-normal">
+          Upload your resume (`.pdf` or `.docx`), target your dream role, and get an instant AI roast, estimated ATS compatibility score, and actionable STAR bullet rewrites — then speak live with our AI voice recruiter.
+        </p>
+
+        {/* Feature Badges */}
+        <div class="flex flex-wrap items-center justify-center gap-4 text-xs font-mono text-neutral-500 pt-2">
+          <span class="flex items-center gap-1.5">
+            <CheckCircle className="w-3.5 h-3.5 text-emerald-500" />
+            No Auth Required
+          </span>
+          <span class="flex items-center gap-1.5">
+            <CheckCircle className="w-3.5 h-3.5 text-emerald-500" />
+            Single-Pass Gemini API
+          </span>
+          <span class="flex items-center gap-1.5">
+            <CheckCircle className="w-3.5 h-3.5 text-emerald-500" />
+            VAPI Live WebRTC Voice
+          </span>
+        </div>
+      </section>
+
+      <!-- Upload Form Island (React Hydrated) -->
+      <section class="w-full relative z-10">
+        <FileDropzone client:load />
+      </section>
+
+      <!-- Feature Grid Cards -->
+      <section class="grid grid-cols-1 md:grid-cols-3 gap-6 pt-6">
+        <div class="vercel-card p-6 space-y-3">
+          <div class="w-10 h-10 rounded-xl bg-orange-50 border border-orange-200/60 flex items-center justify-center text-orange-600">
+            <Flame class="w-5 h-5 fill-orange-500" />
+          </div>
+          <h3 class="font-semibold text-sm text-neutral-900">Witty & Constructive Roast</h3>
+          <p class="text-xs text-neutral-500 leading-relaxed">
+            Hilarious critique targeting your resume content — not you personally. Every roast is paired with actionable improvements.
+          </p>
+        </div>
+
+        <div class="vercel-card p-6 space-y-3">
+          <div class="w-10 h-10 rounded-xl bg-blue-50 border border-blue-200/60 flex items-center justify-center text-blue-600">
+            <ShieldCheck class="w-5 h-5" />
+          </div>
+          <h3 class="font-semibold text-sm text-neutral-900">Estimated ATS Compatibility</h3>
+          <p class="text-xs text-neutral-500 leading-relaxed">
+            Evaluates keyword density, layout readability, and STAR bullet metrics against your target job role.
+          </p>
+        </div>
+
+        <div class="vercel-card p-6 space-y-3">
+          <div class="w-10 h-10 rounded-xl bg-purple-50 border border-purple-200/60 flex items-center justify-center text-purple-600">
+            <Mic class="w-5 h-5" />
+          </div>
+          <h3 class="font-semibold text-sm text-neutral-900">Interactive Voice Lounge</h3>
+          <p class="text-xs text-neutral-500 leading-relaxed">
+            Talk live to our VAPI AI Recruiter. Brainstorm bullet points, practice interview pitch, and fix weaknesses in voice chat.
+          </p>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <Footer />
 </Layout>

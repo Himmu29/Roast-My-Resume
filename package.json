@@ -12,6 +12,21 @@
     "astro": "astro"
   },
   "dependencies": {
-    "astro": "^7.1.6"
+    "@astrojs/node": "^11.0.3",
+    "@astrojs/react": "^6.0.2",
+    "@google/genai": "^2.15.0",
+    "@tailwindcss/vite": "^4.3.3",
+    "@vapi-ai/web": "^2.6.1",
+    "astro": "^7.1.6",
+    "lucide-react": "^1.28.0",
+    "mammoth": "^1.12.0",
+    "pdf-parse": "^2.4.5",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8",
+    "tailwindcss": "^4.3.3",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@types/pdf-parse": "^1.1.5"
   }
 }

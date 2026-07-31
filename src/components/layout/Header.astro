@@ -1,0 +1,34 @@
+---
+import { Flame, Sparkles } from 'lucide-react';
+---
+
+<header class="sticky top-0 z-50 w-full bg-white/80 backdrop-blur-xl border-b border-neutral-200/80 transition-all">
+  <div class="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+    <!-- Brand Logo -->
+    <a href="/" class="flex items-center gap-2.5 group">
+      <div class="w-8 h-8 rounded-lg bg-neutral-900 text-white flex items-center justify-center group-hover:scale-105 transition-transform shadow-xs">
+        <Flame className="w-4 h-4 text-amber-400 fill-amber-400" />
+      </div>
+      <div class="flex items-center gap-2">
+        <span class="font-semibold text-sm tracking-tight text-neutral-900">
+          Roast My Resume
+        </span>
+        <span class="font-mono text-[10px] uppercase font-semibold px-2 py-0.5 rounded-full bg-neutral-100 border border-neutral-200 text-neutral-600">
+          v1.0
+        </span>
+      </div>
+    </a>
+
+    <!-- Status & Links -->
+    <div class="flex items-center gap-3">
+      
+      <a
+        href="/"
+        class="inline-flex items-center gap-1.5 text-xs font-medium px-4 py-2 rounded-full bg-neutral-900 text-white hover:bg-neutral-800 transition-colors shadow-sm"
+      >
+        <Sparkles className="w-3.5 h-3.5 text-amber-300" />
+        Roast New Resume
+      </a>
+    </div>
+  </div>
+</header>
