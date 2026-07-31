@@ -7,7 +7,7 @@ import { Flame, Sparkles } from 'lucide-react';
     <!-- Brand Logo -->
     <a href="/" class="flex items-center gap-2.5 group">
       <div class="w-8 h-8 rounded-lg bg-neutral-900 text-white flex items-center justify-center group-hover:scale-105 transition-transform shadow-xs">
-        <Flame className="w-4 h-4 text-amber-400 fill-amber-400" />
+        <Flame class="w-4 h-4 text-amber-400 fill-amber-400" />
       </div>
       <div class="flex items-center gap-2">
         <span class="font-semibold text-sm tracking-tight text-neutral-900">
@@ -21,12 +21,18 @@ import { Flame, Sparkles } from 'lucide-react';
 
     <!-- Status & Links -->
     <div class="flex items-center gap-3">
-      
+      <div class="hidden sm:flex items-center gap-2 px-3 py-1 rounded-full border border-neutral-200 bg-neutral-50 text-xs text-neutral-600 font-mono">
+        <span class="relative flex h-2 w-2">
+          <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+          <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+        </span>
+        AI Voice Recruiter Active
+      </div>
       <a
         href="/"
         class="inline-flex items-center gap-1.5 text-xs font-medium px-4 py-2 rounded-full bg-neutral-900 text-white hover:bg-neutral-800 transition-colors shadow-sm"
       >
-        <Sparkles className="w-3.5 h-3.5 text-amber-300" />
+        <Sparkles class="w-3.5 h-3.5 text-amber-300" />
         Roast New Resume
       </a>
     </div>

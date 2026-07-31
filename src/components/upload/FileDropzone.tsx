@@ -306,7 +306,7 @@ export function FileDropzone() {
             <div className="space-y-1">
               <p className="font-bold text-sm text-neutral-900">{loadingStep}</p>
               <p className="text-xs text-neutral-500 font-mono">
-                Gemini 2.5 API is evaluating ATS structure & generating roasts...
+                AI engine is evaluating ATS structure & generating roasts...
               </p>
             </div>
           </div>

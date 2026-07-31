@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Vapi from '@vapi-ai/web';
-import { Mic, Radio, Sparkles, AlertCircle, HelpCircle, PhoneCall, MessageSquareText } from 'lucide-react';
+import { Mic, Radio, Sparkles, AlertCircle, PhoneCall, MessageSquareText } from 'lucide-react';
 import { AudioVisualizer } from './AudioVisualizer';
 import { VoiceControls } from './VoiceControls';
 import { buildVapiAssistantConfig } from '../../lib/prompts';
@@ -18,11 +18,9 @@ export function VoiceRoastWidget({ analysis }: VoiceRoastWidgetProps) {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [publicKey, setPublicKey] = useState<string>('d7be711a-6328-45f3-85a5-dfb07c856a67');
   const [assistantId, setAssistantId] = useState<string>('2ca26d7b-2466-433f-8201-8a9d2df26d1d');
-  const [showKeyPrompt, setShowKeyPrompt] = useState<boolean>(false);
   const [transcripts, setTranscripts] = useState<Array<{ role: string; text: string }>>([]);
 
   useEffect(() => {
-    // Check for VAPI Public Key & Assistant ID in env or localStorage with defaults
     const envKey =
       (import.meta as any).env?.PUBLIC_VAPI_API_KEY ||
       (typeof window !== 'undefined' ? localStorage.getItem('vapi_public_key') : '') ||
@@ -46,10 +44,9 @@ export function VoiceRoastWidget({ analysis }: VoiceRoastWidgetProps) {
       setCallStatus('connecting');
       setErrorMessage(null);
 
-      // Safe module constructor resolution for CJS / ESM bundlers
       const VapiConstructor = typeof Vapi === 'function' ? Vapi : (Vapi as any)?.default || Vapi;
       if (typeof VapiConstructor !== 'function') {
-        throw new Error('VAPI Web SDK could not be initialized as a constructor.');
+        throw new Error('Voice module could not be initialized.');
       }
 
       const activeApiKey = apiKeyToUse || 'd7be711a-6328-45f3-85a5-dfb07c856a67';
@@ -83,9 +80,8 @@ export function VoiceRoastWidget({ analysis }: VoiceRoastWidgetProps) {
       });
 
       vapiInstance.on('error', (e: any) => {
-        console.error('VAPI Detailed Error:', e);
-        const detailedMsg = typeof e === 'string' ? e : e?.message || e?.error?.message || JSON.stringify(e);
-        setErrorMessage(`VAPI Voice Error: ${detailedMsg}. Make sure your browser has microphone permission enabled.`);
+        console.error('Voice Error:', e);
+        setErrorMessage('Voice Connection Error. Make sure microphone permission is granted in your browser.');
         setCallStatus('idle');
       });
 
@@ -95,7 +91,6 @@ export function VoiceRoastWidget({ analysis }: VoiceRoastWidgetProps) {
         analysis.targetRole
       );
 
-      // Connect to VAPI Assistant
       if (activeAssistantId) {
         try {
           const overrides = {
@@ -114,26 +109,14 @@ export function VoiceRoastWidget({ analysis }: VoiceRoastWidgetProps) {
         await vapiInstance.start(assistantConfig as any);
       }
     } catch (err: any) {
-      console.error('Failed to initialize VAPI:', err);
-      setErrorMessage(err?.message || 'Initialization error starting VAPI voice call.');
+      console.error('Failed to initialize Voice Agent:', err);
+      setErrorMessage(err?.message || 'Initialization error starting voice session.');
       setCallStatus('idle');
     }
   };
 
   const handleStartCall = () => {
     initAndStartCall(publicKey || 'd7be711a-6328-45f3-85a5-dfb07c856a67', assistantId || '2ca26d7b-2466-433f-8201-8a9d2df26d1d');
-  };
-
-  const handleSaveKeyAndStart = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (publicKey.trim()) {
-      localStorage.setItem('vapi_public_key', publicKey.trim());
-      if (assistantId.trim()) {
-        localStorage.setItem('vapi_assistant_id', assistantId.trim());
-      }
-      setShowKeyPrompt(false);
-      initAndStartCall(publicKey.trim(), assistantId.trim());
-    }
   };
 
   const handleToggleMute = () => {
@@ -166,11 +149,11 @@ export function VoiceRoastWidget({ analysis }: VoiceRoastWidgetProps) {
             <h2 className="font-bold text-lg text-neutral-900 flex items-center gap-2">
               Interactive AI Voice Lounge
               <span className="font-mono text-[10px] uppercase tracking-wider font-semibold px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200">
-                Live WebRTC Voice
+                Live Voice Session
               </span>
             </h2>
             <p className="text-xs text-neutral-500 font-mono">
-              Pre-loaded with Gemini analysis for "{analysis.targetRole || 'Target Role'}"
+              Pre-loaded with personalized analysis for "{analysis.targetRole || 'Target Role'}"
             </p>
           </div>
         </div>
@@ -203,88 +186,26 @@ export function VoiceRoastWidget({ analysis }: VoiceRoastWidgetProps) {
             </p>
           </div>
 
-          {!showKeyPrompt ? (
-            <div className="pt-2 space-y-3">
-              <button
-                type="button"
-                onClick={handleStartCall}
-                className="w-full py-4 px-8 rounded-full bg-neutral-900 hover:bg-neutral-800 text-white font-bold text-base transition-all flex items-center justify-center gap-3 shadow-md hover:scale-[1.02] cursor-pointer"
-              >
-                <Sparkles className="w-5 h-5 text-amber-300 animate-spin" />
-                Start Live Voice Roast Now
-              </button>
-
-              <div className="flex items-center justify-between text-xs font-mono text-neutral-400 px-2 pt-1">
-                <span>Assistant ID: {assistantId.slice(0, 8)}...</span>
-                <button
-                  type="button"
-                  onClick={() => setShowKeyPrompt(true)}
-                  className="underline text-blue-600 hover:text-blue-700 cursor-pointer font-sans font-medium"
-                >
-                  Change VAPI Settings
-                </button>
-              </div>
-            </div>
-          ) : (
-            <form onSubmit={handleSaveKeyAndStart} className="vercel-card p-5 text-left space-y-4 bg-neutral-50 shadow-sm">
-              <label className="block text-xs font-bold text-neutral-900 flex items-center gap-1.5">
-                <HelpCircle className="w-4 h-4 text-blue-600" />
-                VAPI Credentials Setup:
-              </label>
-              <div className="space-y-1">
-                <span className="text-xs font-semibold text-neutral-700">VAPI Public API Key:</span>
-                <input
-                  type="text"
-                  value={publicKey}
-                  onChange={(e) => setPublicKey(e.target.value)}
-                  placeholder="e.g. d7be711a-..."
-                  className="w-full px-3 py-2.5 text-xs rounded-xl border border-neutral-200 bg-white font-mono text-neutral-900 placeholder:text-neutral-400 focus:outline-none focus:border-neutral-900"
-                  required
-                />
-              </div>
-
-              <div className="space-y-1">
-                <span className="text-xs font-semibold text-neutral-700">VAPI Assistant ID (Optional):</span>
-                <input
-                  type="text"
-                  value={assistantId}
-                  onChange={(e) => setAssistantId(e.target.value)}
-                  placeholder="e.g. 2ca26d7b-..."
-                  className="w-full px-3 py-2.5 text-xs rounded-xl border border-neutral-200 bg-white font-mono text-neutral-900 placeholder:text-neutral-400 focus:outline-none focus:border-neutral-900"
-                />
-              </div>
-
-              <div className="flex items-center justify-end gap-2 pt-2">
-                <button
-                  type="button"
-                  onClick={() => setShowKeyPrompt(false)}
-                  className="px-4 py-2 text-xs text-neutral-500 hover:text-neutral-900 font-mono"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="px-5 py-2 text-xs bg-neutral-900 text-white rounded-full font-semibold hover:bg-neutral-800 shadow-xs"
-                >
-                  Save & Connect
-                </button>
-              </div>
-            </form>
-          )}
+          <div className="pt-2 space-y-3">
+            <button
+              type="button"
+              onClick={handleStartCall}
+              className="w-full py-4 px-8 rounded-full bg-neutral-900 hover:bg-neutral-800 text-white font-bold text-base transition-all flex items-center justify-center gap-3 shadow-md hover:scale-[1.02] cursor-pointer"
+            >
+              <Sparkles className="w-5 h-5 text-amber-300 animate-spin" />
+              Start Live Voice Roast Now
+            </button>
+            <p className="text-xs text-neutral-400 font-mono">
+              Uses microphone • Conversational AI Voice Coach
+            </p>
+          </div>
 
           {errorMessage && (
             <div className="p-4 rounded-xl bg-red-50 text-red-700 text-xs border border-red-200 flex items-start gap-2.5 text-left">
               <AlertCircle className="w-5 h-5 text-red-600 shrink-0 mt-0.5" />
               <div className="space-y-1">
-                <p className="font-bold text-red-800">Connection Failed</p>
+                <p className="font-bold text-red-800">Connection Notice</p>
                 <p>{errorMessage}</p>
-                <button
-                  type="button"
-                  onClick={() => setShowKeyPrompt(true)}
-                  className="text-xs underline text-red-900 font-semibold pt-1 block"
-                >
-                  Click here to verify/update your VAPI credentials
-                </button>
               </div>
             </div>
           )}
