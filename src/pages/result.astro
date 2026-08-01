@@ -9,7 +9,7 @@ import { ResultDashboard } from '../components/dashboard/ResultDashboard';
   <Header />
 
   <main class="flex-1 w-full max-w-5xl mx-auto px-4 sm:px-6 py-10">
-    <ResultDashboard client:load />
+    <ResultDashboard client:only="react" />
   </main>
 
   <Footer />

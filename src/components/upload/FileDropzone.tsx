@@ -113,8 +113,15 @@ export function FileDropzone() {
         throw new Error(data.error || 'Failed to analyze resume. Please try again.');
       }
 
-      // Save to sessionStorage and navigate to result page
-      sessionStorage.setItem('resume_roast_data', JSON.stringify(data.data));
+      // Save to sessionStorage and fallback to localStorage for Safari private browsing
+      try {
+        sessionStorage.setItem('resume_roast_data', JSON.stringify(data.data));
+      } catch (storageErr) {
+        console.warn('sessionStorage failed, trying localStorage fallback:', storageErr);
+        try {
+          localStorage.setItem('resume_roast_data', JSON.stringify(data.data));
+        } catch {}
+      }
       window.location.href = '/result';
     } catch (err: any) {
       setError(err?.message || 'An error occurred during roast generation.');

@@ -12,12 +12,14 @@ export function ResultDashboard() {
 
   useEffect(() => {
     try {
-      const stored = sessionStorage.getItem('resume_roast_data');
+      const storedSession = typeof window !== 'undefined' ? sessionStorage.getItem('resume_roast_data') : null;
+      const storedLocal = typeof window !== 'undefined' ? localStorage.getItem('resume_roast_data') : null;
+      const stored = storedSession || storedLocal;
       if (stored) {
         setAnalysis(JSON.parse(stored));
       }
     } catch (e) {
-      console.error('Failed to load roast analysis from sessionStorage:', e);
+      console.error('Failed to load roast analysis from browser storage:', e);
     } finally {
       setLoading(false);
     }

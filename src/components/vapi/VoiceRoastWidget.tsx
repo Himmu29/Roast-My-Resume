@@ -21,14 +21,16 @@ export function VoiceRoastWidget({ analysis }: VoiceRoastWidgetProps) {
   const [transcripts, setTranscripts] = useState<Array<{ role: string; text: string }>>([]);
 
   useEffect(() => {
+    if (typeof window === 'undefined') return;
+
     const envKey =
       (import.meta as any).env?.PUBLIC_VAPI_API_KEY ||
-      (typeof window !== 'undefined' ? localStorage.getItem('vapi_public_key') : '') ||
+      localStorage.getItem('vapi_public_key') ||
       'd7be711a-6328-45f3-85a5-dfb07c856a67';
 
     const envAssistantId =
       (import.meta as any).env?.PUBLIC_VAPI_ASSISTANT_ID ||
-      (typeof window !== 'undefined' ? localStorage.getItem('vapi_assistant_id') : '') ||
+      localStorage.getItem('vapi_assistant_id') ||
       '2ca26d7b-2466-433f-8201-8a9d2df26d1d';
 
     if (envKey) {
@@ -44,9 +46,13 @@ export function VoiceRoastWidget({ analysis }: VoiceRoastWidgetProps) {
       setCallStatus('connecting');
       setErrorMessage(null);
 
-      const VapiConstructor = typeof Vapi === 'function' ? Vapi : (Vapi as any)?.default || Vapi;
+      let VapiConstructor: any = Vapi;
       if (typeof VapiConstructor !== 'function') {
-        throw new Error('Voice module could not be initialized.');
+        VapiConstructor = (Vapi as any)?.default;
+      }
+
+      if (typeof VapiConstructor !== 'function') {
+        throw new Error('Voice SDK module could not be loaded.');
       }
 
       const activeApiKey = apiKeyToUse || 'd7be711a-6328-45f3-85a5-dfb07c856a67';
@@ -71,7 +77,6 @@ export function VoiceRoastWidget({ analysis }: VoiceRoastWidgetProps) {
       });
 
       vapiInstance.on('message', (msg: any) => {
-        // Handle final transcript messages only to prevent duplicate line output
         if (msg?.type === 'transcript' && msg?.transcript && msg?.transcriptType === 'final') {
           setTranscripts((prev) => {
             const lastMsg = prev[prev.length - 1];
@@ -88,7 +93,7 @@ export function VoiceRoastWidget({ analysis }: VoiceRoastWidgetProps) {
 
       vapiInstance.on('error', (e: any) => {
         console.error('Voice Error:', e);
-        setErrorMessage('Voice Connection Error. Make sure microphone permission is granted in your browser.');
+        setErrorMessage('Voice connection notice. Please ensure microphone permissions are allowed in your browser.');
         setCallStatus('idle');
       });
 
@@ -109,7 +114,7 @@ export function VoiceRoastWidget({ analysis }: VoiceRoastWidgetProps) {
           };
           await vapiInstance.start(activeAssistantId, overrides as any);
         } catch (firstErr) {
-          console.warn('Start with assistantId failed, falling back to transient assistant...', firstErr);
+          console.warn('Start with assistantId failed, falling back to transient assistant config...', firstErr);
           await vapiInstance.start(assistantConfig as any);
         }
       } else {
@@ -143,7 +148,6 @@ export function VoiceRoastWidget({ analysis }: VoiceRoastWidgetProps) {
 
   return (
     <div className="relative overflow-hidden rounded-2xl border-2 border-neutral-900 bg-white p-6 sm:p-8 space-y-6 shadow-lg">
-      {/* Vercel Top Accent Glow */}
       <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600"></div>
 
       {/* Top Header */}
@@ -219,7 +223,6 @@ export function VoiceRoastWidget({ analysis }: VoiceRoastWidgetProps) {
         </div>
       ) : (
         <div className="text-center py-6 space-y-6 max-w-lg mx-auto">
-          {/* Animated Visualizer Waveform */}
           <AudioVisualizer isActive={callStatus === 'connected'} isSpeaking={isSpeaking} />
 
           <div className="space-y-1">
@@ -235,14 +238,12 @@ export function VoiceRoastWidget({ analysis }: VoiceRoastWidgetProps) {
             </p>
           </div>
 
-          {/* Controls */}
           <VoiceControls
             isMuted={isMuted}
             onToggleMute={handleToggleMute}
             onEndCall={handleEndCall}
           />
 
-          {/* Real-Time Live Transcript Preview */}
           {transcripts.length > 0 && (
             <div className="mt-6 text-left border-t border-neutral-100 pt-4 space-y-2">
               <span className="text-[11px] font-mono text-neutral-400 uppercase tracking-wider flex items-center gap-1">
