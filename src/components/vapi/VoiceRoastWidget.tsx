@@ -3,7 +3,7 @@ import Vapi from '@vapi-ai/web';
 import { Mic, Radio, Sparkles, AlertCircle, PhoneCall, MessageSquareText } from 'lucide-react';
 import { AudioVisualizer } from './AudioVisualizer';
 import { VoiceControls } from './VoiceControls';
-import { buildVapiAssistantConfig } from '../../lib/prompts';
+import { buildVapiAssistantConfig, checkIsNonResume } from '../../lib/prompts';
 import type { ResumeAnalysis } from '../../types';
 
 interface VoiceRoastWidgetProps {
@@ -59,6 +59,9 @@ export function VoiceRoastWidget({ analysis }: VoiceRoastWidgetProps) {
       const vapiInstance = new VapiConstructor(activeApiKey);
       setVapi(vapiInstance);
 
+      const isNonResumeDoc = checkIsNonResume(analysis);
+      let autoDisconnected = false;
+
       vapiInstance.on('call-start', () => {
         setCallStatus('connected');
       });
@@ -74,6 +77,16 @@ export function VoiceRoastWidget({ analysis }: VoiceRoastWidgetProps) {
 
       vapiInstance.on('speech-end', () => {
         setIsSpeaking(false);
+
+        if (isNonResumeDoc && !autoDisconnected) {
+          autoDisconnected = true;
+          setTimeout(() => {
+            try {
+              vapiInstance.stop();
+            } catch {}
+            setCallStatus('ended');
+          }, 1200);
+        }
       });
 
       vapiInstance.on('message', (msg: any) => {
@@ -106,6 +119,7 @@ export function VoiceRoastWidget({ analysis }: VoiceRoastWidgetProps) {
       if (activeAssistantId) {
         try {
           const overrides = {
+            firstMessage: assistantConfig.firstMessage,
             variableValues: {
               targetRole: analysis.targetRole || 'General Tech Role',
               voiceSummary: analysis.vapiVoiceSummary || analysis.roast,

@@ -48,22 +48,37 @@ ${personalityStyle}
 VERY IMPORTANT RULES
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-1. ROAST AGGRESSIVELY & UNFORGIVINGLY ABOUT REAL CONTENT.
+1. NON-RESUME / INVALID DOCUMENT DETECTION:
+- BEFORE auditing, verify if the uploaded document is actually a resume. A valid resume must contain typical core resume sections or content (e.g. Education, Experience/Work, Skills, Projects, Qualifications).
+- IF the uploaded document is NOT a resume (e.g. an invoice, assignment, tax form, essay, bill, random notes, or completely lacks core resume indicators like Education, Experience, Skills, or Projects):
+  - verdict: "Wrong File Uploaded! Not A Resume"
+  - roast: "You were supposed to upload a resume, not some random document! Upload a real resume containing your Education, Experience, Skills, and Projects if you want a real roast."
+  - resumeScore: 0
+  - atsScore: 0
+  - strengths: ["None - Uploaded file is not a resume."]
+  - weaknesses: ["The uploaded document lacks standard resume sections (Education, Experience, Skills, Projects)."]
+  - actionableImprovements: ["Upload a valid PDF or DOCX resume containing your Education, Work Experience, Projects, and Skills."]
+  - betterSummary: "Please upload a proper resume to receive custom summary recommendations."
+  - betterBulletPoints: []
+  - missingKeywords: ["Education", "Work Experience", "Skills", "Projects"]
+  - vapiVoiceSummary: "The user uploaded a non-resume document instead of an actual resume. Give them a witty callout to upload a real resume with Education, Skills, and Projects."
+
+2. ROAST AGGRESSIVELY & UNFORGIVINGLY ABOUT REAL CONTENT.
 - Do NOT hold back on the roast. Be witty, spicy, sharp, and brutally honest about the RESUME.
 - Target real flaws: vague achievements, corporate buzzwords, missing metrics, generic skills, inflated titles, or weak bullet points.
 - Always roast the RESUME CONTENT, phrasing, and choices—never attack the candidate personally.
 
-2. ABSOLUTELY NO TALKING ABOUT MISSING SUMMARIES.
+3. ABSOLUTELY NO TALKING ABOUT MISSING SUMMARIES.
 - NEVER mention, critique, roast, or harp on missing summary sections.
 - Do NOT list "missing summary", "add a summary section", or "no summary" in roast, verdict, strengths, weaknesses, or actionableImprovements.
 - Ignore the presence or absence of a summary section completely when evaluating flaws.
 
-3. STRICT FACTUAL GROUNDING (NO HALLUCINATIONS).
+4. STRICT FACTUAL GROUNDING (NO HALLUCINATIONS).
 - ONLY use information present in the resume.
 - Never invent projects, experience, skills, certifications, achievements, links, or technologies.
 - Only analyze sections and content actually written on the resume page.
 
-4. DETECT RESUME STRUCTURE FIRST.
+5. DETECT RESUME STRUCTURE FIRST.
 - Determine which sections actually exist (Experience, Projects, Skills, Education, etc.).
 - ONLY critique and roast content within sections that actually exist on the page.
 
@@ -104,8 +119,40 @@ Fields required:
 - vapiVoiceSummary: Concise 3-4 sentence summary for a live voice agent detailing the target role, scores, punchiest roast line, top strength, and biggest fix.`;
 }
 
+export function checkIsNonResume(analysis: any): boolean {
+  if (!analysis) return false;
+  const verdict = (analysis.verdict || '').toLowerCase();
+  const roast = (analysis.roast || '').toLowerCase();
+  const summary = (analysis.vapiVoiceSummary || '').toLowerCase();
+  const strengths = Array.isArray(analysis.strengths) ? analysis.strengths.join(' ').toLowerCase() : '';
+
+  return (
+    verdict.includes('not a resume') ||
+    verdict.includes('wrong file') ||
+    roast.includes('not a resume') ||
+    roast.includes('supposed to upload a resume') ||
+    summary.includes('non-resume') ||
+    summary.includes('not a resume') ||
+    summary.includes('wrong file') ||
+    strengths.includes('not a resume')
+  );
+}
+
 export function buildVapiAssistantConfig(vapiVoiceSummary: string, targetRole: string) {
   const roleContext = targetRole.trim() ? targetRole.trim() : 'Software / Technology Role';
+
+  const summaryLower = (vapiVoiceSummary || '').toLowerCase();
+  const isNonResume =
+    summaryLower.includes('non-resume') ||
+    summaryLower.includes('not a resume') ||
+    summaryLower.includes('wrong file') ||
+    summaryLower.includes('shitty file') ||
+    summaryLower.includes('uploaded file is not a resume') ||
+    summaryLower.includes('lacks standard resume');
+
+  const firstMessage = isNonResume
+    ? `Hey! I took a look at the file you uploaded, but this isn't even a resume! Please upload an actual resume with Education, Experience, and Skills.`
+    : `Hey there! I've gone over your resume for the ${roleContext} position. Ready for a friendly roast and some quick wins to make your resume stand out?`;
 
   return {
     name: "Roast Master AI",
@@ -122,13 +169,14 @@ CANDIDATE'S RESUME ANALYSIS SUMMARY:
 ${vapiVoiceSummary}
 
 STRICT BEHAVIOR & GROUNDING RULES:
-1. FACTUAL ACCURACY: Reference ONLY details, sections, and achievements that actually exist in the candidate's resume summary. Never claim they have a section or written text that is not in their document. If a section is missing (e.g. no summary section), mention it gently as a quick win to add.
-2. ROAST THE RESUME, NOT THE PERSON: Poke light fun at vague phrasing or buzzwords, but NEVER mock the candidate personally.
-3. ALWAYS BE CONSTRUCTIVE: Pair every funny critique with a clear, practical tip to fix it.
-4. ACKNOWLEDGE THE GOOD: Praise their actual achievements and highlight what they got right!
-5. CONVERSE LIKE A HUMAN RECRUITER: Speak naturally in short, conversational sentences. Listen attentively when the candidate speaks.
-6. INTERACTIVE COLLABORATION: Answer follow-up questions directly and help them rephrase bullets or highlight skills live on the spot.
-7. KEEP IT ON TOPIC: Focus strictly on their resume, skills, and target role "${roleContext}".`
+1. NON-RESUME AUTOMATIC TERMINATION: If the candidate uploaded a non-resume document (like an invoice, assignment, or non-resume PDF lacking Education, Skills, or Projects), state the initial callout explaining that this is not a resume, then immediately conclude the conversation without asking follow-up questions.
+2. FACTUAL ACCURACY: Reference ONLY details, sections, and achievements that actually exist in the candidate's resume summary. Never claim they have a section or written text that is not in their document.
+3. ROAST THE RESUME, NOT THE PERSON: Poke light fun at vague phrasing or buzzwords, but NEVER mock the candidate personally.
+4. ALWAYS BE CONSTRUCTIVE: Pair every funny critique with a clear, practical tip to fix it.
+5. ACKNOWLEDGE THE GOOD: Praise their actual achievements and highlight what they got right!
+6. CONVERSE LIKE A HUMAN RECRUITER: Speak naturally in short, conversational sentences. Listen attentively when the candidate speaks.
+7. INTERACTIVE COLLABORATION: Answer follow-up questions directly and help them rephrase bullets or highlight skills live on the spot.
+8. KEEP IT ON TOPIC: Focus strictly on their resume, skills, and target role "${roleContext}".`
         }
       ]
     },
@@ -136,7 +184,7 @@ STRICT BEHAVIOR & GROUNDING RULES:
       provider: "11labs" as const,
       voiceId: "21m00Tcm4TlvDq8ikWAM" // Rachel / conversational voice
     },
-    firstMessage: `Hey there! I've gone over your resume for the ${roleContext} position. Ready for a friendly roast and some quick wins to make your resume stand out?`
+    firstMessage
   };
 }
 
