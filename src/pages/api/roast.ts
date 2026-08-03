@@ -1,6 +1,6 @@
 import type { APIRoute } from 'astro';
 import { parseResumeFile } from '../../lib/parser';
-import { analyzeResumeWithGemini } from '../../lib/gemini';
+import { analyzeResumeWithGemini, formatUserFacingError } from '../../lib/gemini';
 import type { RoastApiResponse } from '../../types';
 
 export const prerender = false;
@@ -53,7 +53,7 @@ export const POST: APIRoute = async ({ request }) => {
       });
     }
 
-    // 2. Perform Gemini Structured JSON Analysis
+    // 2. Perform Structured AI JSON Analysis
     const analysis = await analyzeResumeWithGemini(parseResult, targetRole, personalityId);
 
     const responseBody: RoastApiResponse = {
@@ -68,10 +68,7 @@ export const POST: APIRoute = async ({ request }) => {
   } catch (error: any) {
     console.error('Error in /api/roast:', error);
 
-    const isApiKeyError = error?.message?.includes('GEMINI_API_KEY');
-    const userFacingError = isApiKeyError
-      ? 'Server configuration issue: GEMINI_API_KEY is missing or invalid. Please check your environment configuration.'
-      : error?.message || 'Internal server error while roasting resume.';
+    const userFacingError = formatUserFacingError(error);
 
     const responseBody: RoastApiResponse = {
       success: false,
@@ -84,3 +81,4 @@ export const POST: APIRoute = async ({ request }) => {
     });
   }
 };
+

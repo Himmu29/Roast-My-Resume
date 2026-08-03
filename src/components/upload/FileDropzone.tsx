@@ -124,7 +124,11 @@ export function FileDropzone() {
       }
       window.location.href = '/result';
     } catch (err: any) {
-      setError(err?.message || 'An error occurred during roast generation.');
+      let message = err?.message || 'An error occurred during roast generation.';
+      if (message.includes('{') || message.toLowerCase().includes('gemini')) {
+        message = 'The AI engine is currently experiencing high demand. Please try again in a few moments.';
+      }
+      setError(message);
       setLoading(false);
     }
   };

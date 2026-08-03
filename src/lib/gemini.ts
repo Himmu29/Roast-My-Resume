@@ -41,6 +41,59 @@ async function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+export function isTransientError(err: any): boolean {
+  if (!err) return false;
+  const status = err?.status || err?.code || err?.error?.code;
+  const msg = (err?.message || String(err)).toLowerCase();
+
+  return (
+    status === 429 ||
+    status === 503 ||
+    status === 500 ||
+    msg.includes('503') ||
+    msg.includes('429') ||
+    msg.includes('500') ||
+    msg.includes('unavailable') ||
+    msg.includes('high demand') ||
+    msg.includes('resource_exhausted') ||
+    msg.includes('overloaded') ||
+    msg.includes('fetch failed') ||
+    msg.includes('quota') ||
+    msg.includes('temporarily')
+  );
+}
+
+export function formatUserFacingError(err: any): string {
+  if (!err) return 'Unable to analyze resume at this time. Please try again in a few moments.';
+
+  const msg = (typeof err === 'string' ? err : err?.message || String(err)).toLowerCase();
+
+  if (
+    msg.includes('missing') ||
+    msg.includes('invalid') ||
+    msg.includes('unauthorized') ||
+    msg.includes('api_key') ||
+    msg.includes('api key')
+  ) {
+    return 'Server configuration issue: AI service key is missing or invalid. Please check your environment configuration.';
+  }
+
+  if (
+    msg.includes('503') ||
+    msg.includes('429') ||
+    msg.includes('unavailable') ||
+    msg.includes('high demand') ||
+    msg.includes('resource_exhausted') ||
+    msg.includes('overloaded') ||
+    msg.includes('quota') ||
+    msg.includes('temporarily')
+  ) {
+    return 'The AI engine is currently experiencing high demand. Please try again in a few moments.';
+  }
+
+  return 'Unable to analyze resume at this time. Please try again in a few moments.';
+}
+
 export async function analyzeResumeWithGemini(
   resumeInput: string | ParseResult,
   targetRole: string,
@@ -49,7 +102,7 @@ export async function analyzeResumeWithGemini(
   const apiKey = resolveApiKey();
 
   if (!apiKey) {
-    throw new Error('GEMINI_API_KEY environment variable is missing or invalid in server environment.');
+    throw new Error('AI service key is missing or invalid in server environment.');
   }
 
   const ai = new GoogleGenAI({ apiKey });
@@ -62,7 +115,7 @@ export async function analyzeResumeWithGemini(
 
   const userParts: any[] = [];
 
-  // Pass raw PDF buffer directly to Gemini 2.5 Flash for native multimodal document comprehension
+  // Pass raw PDF buffer directly for native multimodal document comprehension
   if (mimeType === 'application/pdf' && buffer) {
     userParts.push({
       inlineData: {
@@ -79,99 +132,93 @@ export async function analyzeResumeWithGemini(
     });
   }
 
-  const maxRetries = 2;
+  const candidateModels = ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-1.5-flash'];
   let lastError: any = null;
 
-  for (let attempt = 0; attempt <= maxRetries; attempt++) {
-    try {
-      const response = await ai.models.generateContent({
-        model: 'gemini-2.5-flash',
-        contents: [
-          {
-            role: 'user',
-            parts: userParts,
-          },
-        ],
-        config: {
-          systemInstruction,
-          responseMimeType: 'application/json',
-          responseSchema: {
-            type: Type.OBJECT,
-            properties: {
-              targetRole: { type: Type.STRING },
-              resumeScore: { type: Type.INTEGER },
-              atsScore: { type: Type.INTEGER },
-              verdict: { type: Type.STRING },
-              roast: { type: Type.STRING },
-              strengths: { type: Type.ARRAY, items: { type: Type.STRING } },
-              weaknesses: { type: Type.ARRAY, items: { type: Type.STRING } },
-              actionableImprovements: { type: Type.ARRAY, items: { type: Type.STRING } },
-              betterSummary: { type: Type.STRING },
-              betterBulletPoints: {
-                type: Type.ARRAY,
-                items: {
-                  type: Type.OBJECT,
-                  properties: {
-                    original: { type: Type.STRING },
-                    improved: { type: Type.STRING },
-                  },
-                  required: ['original', 'improved'],
-                },
-              },
-              missingKeywords: { type: Type.ARRAY, items: { type: Type.STRING } },
-              vapiVoiceSummary: { type: Type.STRING },
+  for (const model of candidateModels) {
+    const maxRetriesPerModel = 1;
+    for (let attempt = 0; attempt <= maxRetriesPerModel; attempt++) {
+      try {
+        const response = await ai.models.generateContent({
+          model,
+          contents: [
+            {
+              role: 'user',
+              parts: userParts,
             },
-            required: [
-              'targetRole',
-              'resumeScore',
-              'atsScore',
-              'verdict',
-              'roast',
-              'strengths',
-              'weaknesses',
-              'actionableImprovements',
-              'betterSummary',
-              'betterBulletPoints',
-              'missingKeywords',
-              'vapiVoiceSummary',
-            ],
+          ],
+          config: {
+            systemInstruction,
+            responseMimeType: 'application/json',
+            responseSchema: {
+              type: Type.OBJECT,
+              properties: {
+                targetRole: { type: Type.STRING },
+                resumeScore: { type: Type.INTEGER },
+                atsScore: { type: Type.INTEGER },
+                verdict: { type: Type.STRING },
+                roast: { type: Type.STRING },
+                strengths: { type: Type.ARRAY, items: { type: Type.STRING } },
+                weaknesses: { type: Type.ARRAY, items: { type: Type.STRING } },
+                actionableImprovements: { type: Type.ARRAY, items: { type: Type.STRING } },
+                betterSummary: { type: Type.STRING },
+                betterBulletPoints: {
+                  type: Type.ARRAY,
+                  items: {
+                    type: Type.OBJECT,
+                    properties: {
+                      original: { type: Type.STRING },
+                      improved: { type: Type.STRING },
+                    },
+                    required: ['original', 'improved'],
+                  },
+                },
+                missingKeywords: { type: Type.ARRAY, items: { type: Type.STRING } },
+                vapiVoiceSummary: { type: Type.STRING },
+              },
+              required: [
+                'targetRole',
+                'resumeScore',
+                'atsScore',
+                'verdict',
+                'roast',
+                'strengths',
+                'weaknesses',
+                'actionableImprovements',
+                'betterSummary',
+                'betterBulletPoints',
+                'missingKeywords',
+                'vapiVoiceSummary',
+              ],
+            },
           },
-        },
-      });
+        });
 
-      const rawResponseText = response.text;
-      if (!rawResponseText) {
-        throw new Error('Empty response received from Gemini API.');
+        const rawResponseText = response.text;
+        if (!rawResponseText) {
+          throw new Error('Empty response received from AI model.');
+        }
+
+        const cleanedText = cleanJsonResponseText(rawResponseText);
+        const parsedJson = JSON.parse(cleanedText);
+        const validated = ResumeAnalysisSchema.parse(parsedJson);
+
+        return validated as ResumeAnalysis;
+      } catch (err: any) {
+        lastError = err;
+        console.warn(`AI model ${model} attempt ${attempt + 1} failed:`, err?.message || err);
+
+        if (isTransientError(err) && attempt < maxRetriesPerModel) {
+          const backoffMs = (attempt + 1) * 1500;
+          await sleep(backoffMs);
+          continue;
+        }
+
+        break;
       }
-
-      const cleanedText = cleanJsonResponseText(rawResponseText);
-      const parsedJson = JSON.parse(cleanedText);
-      const validated = ResumeAnalysisSchema.parse(parsedJson);
-
-      return validated as ResumeAnalysis;
-    } catch (err: any) {
-      lastError = err;
-      console.warn(`Gemini API attempt ${attempt + 1} failed:`, err?.message || err);
-
-      const isRateLimitOrTransient =
-        err?.status === 429 ||
-        err?.status === 503 ||
-        err?.status === 500 ||
-        err?.message?.includes('429') ||
-        err?.message?.includes('RESOURCE_EXHAUSTED') ||
-        err?.message?.includes('fetch failed');
-
-      if (isRateLimitOrTransient && attempt < maxRetries) {
-        const backoffMs = (attempt + 1) * 1500;
-        await sleep(backoffMs);
-        continue;
-      }
-
-      break;
     }
   }
 
-  throw new Error(
-    `Failed to analyze resume with Gemini API: ${lastError?.message || 'Unexpected AI engine error.'}`
-  );
+  throw new Error(formatUserFacingError(lastError));
 }
+
