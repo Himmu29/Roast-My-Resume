@@ -152,8 +152,9 @@ export function buildVapiAssistantConfig(vapiVoiceSummary: string, targetRole: s
     summaryLower.includes('lacks standard resume');
 
   const firstMessage = isNonResume
-    ? `Hey! I took a look at the file you uploaded, but this isn't even a resume! Please upload an actual resume with Education, Experience, and Skills.`
-    : `Alright, I've been through your resume for the ${roleContext} role — and I've got some notes. You ready, or do you want me to ease into it? ...Kidding, I'm not easing into anything. Let's go.`;
+    ? `Congratulations. You managed to confuse an AI recruiter.
+    I searched for Experience, Education, Skills... even a fake sign of career ambition. Found none just like your girlfriend. Upload an actual resume and I'll happily destroy it.`
+    : `Alright, I've been through your resume for the ${roleContext} role — and I've got some notes. Brace yourself. Your resume just volunteered for public humiliation`;
 
   return {
     name: "Roast Master AI",

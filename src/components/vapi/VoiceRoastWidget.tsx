@@ -4,6 +4,7 @@ import { Mic, Radio, Sparkles, AlertCircle, PhoneCall, MessageSquareText } from 
 import { AudioVisualizer } from './AudioVisualizer';
 import { VoiceControls } from './VoiceControls';
 import { buildVapiAssistantConfig, checkIsNonResume } from '../../lib/prompts';
+import { resolveVapiPublicKeys, resolveVapiAssistantIds } from '../../lib/vapi';
 import type { ResumeAnalysis } from '../../types';
 
 interface VoiceRoastWidgetProps {
@@ -16,32 +17,9 @@ export function VoiceRoastWidget({ analysis }: VoiceRoastWidgetProps) {
   const [isSpeaking, setIsSpeaking] = useState<boolean>(false);
   const [isMuted, setIsMuted] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [publicKey, setPublicKey] = useState<string>('d7be711a-6328-45f3-85a5-dfb07c856a67');
-  const [assistantId, setAssistantId] = useState<string>('2ca26d7b-2466-433f-8201-8a9d2df26d1d');
   const [transcripts, setTranscripts] = useState<Array<{ role: string; text: string }>>([]);
 
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-
-    const envKey =
-      (import.meta as any).env?.PUBLIC_VAPI_API_KEY ||
-      localStorage.getItem('vapi_public_key') ||
-      'd7be711a-6328-45f3-85a5-dfb07c856a67';
-
-    const envAssistantId =
-      (import.meta as any).env?.PUBLIC_VAPI_ASSISTANT_ID ||
-      localStorage.getItem('vapi_assistant_id') ||
-      '2ca26d7b-2466-433f-8201-8a9d2df26d1d';
-
-    if (envKey) {
-      setPublicKey(envKey);
-    }
-    if (envAssistantId) {
-      setAssistantId(envAssistantId);
-    }
-  }, []);
-
-  const initAndStartCall = async (apiKeyToUse: string, assistantIdToUse?: string) => {
+  const initAndStartCall = async () => {
     try {
       setCallStatus('connecting');
       setErrorMessage(null);
@@ -55,84 +33,142 @@ export function VoiceRoastWidget({ analysis }: VoiceRoastWidgetProps) {
         throw new Error('Voice SDK module could not be loaded.');
       }
 
-      const activeApiKey = apiKeyToUse || 'd7be711a-6328-45f3-85a5-dfb07c856a67';
-      const vapiInstance = new VapiConstructor(activeApiKey);
-      setVapi(vapiInstance);
+      const publicKeys = resolveVapiPublicKeys();
+      const assistantIds = resolveVapiAssistantIds();
+
+      const candidatePairs: Array<{ key: string; assistantId: string }> = [];
+      const maxLen = Math.max(publicKeys.length, assistantIds.length);
+      for (let i = 0; i < maxLen; i++) {
+        const key = publicKeys[i] || publicKeys[0];
+        const astId = assistantIds[i] || assistantIds[0];
+        if (key && astId) {
+          candidatePairs.push({ key, assistantId: astId });
+        }
+      }
 
       const isNonResumeDoc = checkIsNonResume(analysis);
-      let autoDisconnected = false;
-
-      vapiInstance.on('call-start', () => {
-        setCallStatus('connected');
-      });
-
-      vapiInstance.on('call-end', () => {
-        setCallStatus('ended');
-        setIsSpeaking(false);
-      });
-
-      vapiInstance.on('speech-start', () => {
-        setIsSpeaking(true);
-      });
-
-      vapiInstance.on('speech-end', () => {
-        setIsSpeaking(false);
-
-        if (isNonResumeDoc && !autoDisconnected) {
-          autoDisconnected = true;
-          setTimeout(() => {
-            try {
-              vapiInstance.stop();
-            } catch {}
-            setCallStatus('ended');
-          }, 1200);
-        }
-      });
-
-      vapiInstance.on('message', (msg: any) => {
-        if (msg?.type === 'transcript' && msg?.transcript && msg?.transcriptType === 'final') {
-          setTranscripts((prev) => {
-            const lastMsg = prev[prev.length - 1];
-            if (lastMsg && lastMsg.text === msg.transcript) {
-              return prev;
-            }
-            return [
-              ...prev,
-              { role: msg.role || 'assistant', text: msg.transcript },
-            ];
-          });
-        }
-      });
-
-      vapiInstance.on('error', (e: any) => {
-        console.error('Voice Error:', e);
-        setErrorMessage('Voice connection notice. Please ensure microphone permissions are allowed in your browser.');
-        setCallStatus('idle');
-      });
-
-      const activeAssistantId = assistantIdToUse || assistantId || '2ca26d7b-2466-433f-8201-8a9d2df26d1d';
       const assistantConfig = buildVapiAssistantConfig(
         analysis.vapiVoiceSummary || analysis.roast,
         analysis.targetRole
       );
 
-      if (activeAssistantId) {
+      let lastErr: any = null;
+
+      for (let pairIdx = 0; pairIdx < candidatePairs.length; pairIdx++) {
+        const { key: activeApiKey, assistantId: activeAssistantId } = candidatePairs[pairIdx];
+        const maskedKey = activeApiKey.length > 8 ? `...${activeApiKey.slice(-6)}` : `Key #${pairIdx + 1}`;
+
         try {
-          const overrides = {
-            firstMessage: assistantConfig.firstMessage,
-            variableValues: {
-              targetRole: analysis.targetRole || 'General Tech Role',
-              voiceSummary: analysis.vapiVoiceSummary || analysis.roast,
-              roast: analysis.roast,
-            },
-          };
-          await vapiInstance.start(activeAssistantId, overrides as any);
-        } catch (firstErr) {
-          console.warn('Start with assistantId failed, falling back to transient assistant config...', firstErr);
-          await vapiInstance.start(assistantConfig as any);
+          const vapiInstance = new VapiConstructor(activeApiKey);
+          setVapi(vapiInstance);
+
+          let autoDisconnected = false;
+          let callEstablished = false;
+
+          const startSuccess = await new Promise<boolean>((resolve) => {
+            let hasResolved = false;
+
+            vapiInstance.on('call-start', () => {
+              callEstablished = true;
+              setCallStatus('connected');
+              if (!hasResolved) {
+                hasResolved = true;
+                resolve(true);
+              }
+            });
+
+            vapiInstance.on('call-end', () => {
+              setCallStatus('ended');
+              setIsSpeaking(false);
+            });
+
+            vapiInstance.on('speech-start', () => {
+              setIsSpeaking(true);
+            });
+
+            vapiInstance.on('speech-end', () => {
+              setIsSpeaking(false);
+              if (isNonResumeDoc && !autoDisconnected) {
+                autoDisconnected = true;
+                setTimeout(() => {
+                  try {
+                    vapiInstance.stop();
+                  } catch {}
+                  setCallStatus('ended');
+                }, 1200);
+              }
+            });
+
+            vapiInstance.on('message', (msg: any) => {
+              if (msg?.type === 'transcript' && msg?.transcript && msg?.transcriptType === 'final') {
+                setTranscripts((prev) => {
+                  const lastMsg = prev[prev.length - 1];
+                  if (lastMsg && lastMsg.text === msg.transcript) return prev;
+                  return [...prev, { role: msg.role || 'assistant', text: msg.transcript }];
+                });
+              }
+            });
+
+            vapiInstance.on('error', (e: any) => {
+              console.warn(`VAPI Voice notice/error on key ${maskedKey}:`, e);
+              if (!hasResolved && !callEstablished) {
+                hasResolved = true;
+                try {
+                  vapiInstance.stop();
+                } catch {}
+                resolve(false);
+              } else {
+                setErrorMessage('Voice connection notice. Please ensure microphone permissions are allowed in your browser.');
+              }
+            });
+
+            const overrides = {
+              firstMessage: assistantConfig.firstMessage,
+              variableValues: {
+                targetRole: analysis.targetRole || 'General Tech Role',
+                voiceSummary: analysis.vapiVoiceSummary || analysis.roast,
+                roast: analysis.roast,
+              },
+            };
+
+            const startPromise = activeAssistantId
+              ? vapiInstance.start(activeAssistantId, overrides as any)
+              : vapiInstance.start(assistantConfig as any);
+
+            startPromise
+              .then(() => {
+                setTimeout(() => {
+                  if (!hasResolved) {
+                    hasResolved = true;
+                    resolve(true);
+                  }
+                }, 4000);
+              })
+              .catch((startErr: any) => {
+                console.warn(`VAPI start failed for key ${maskedKey}:`, startErr);
+                if (!hasResolved) {
+                  hasResolved = true;
+                  try {
+                    vapiInstance.stop();
+                  } catch {}
+                  resolve(false);
+                }
+              });
+          });
+
+          if (startSuccess) {
+            return;
+          }
+        } catch (pairErr: any) {
+          lastErr = pairErr;
+          console.warn(`VAPI Pair ${pairIdx + 1} with key ${maskedKey} failed, attempting next key...`, pairErr);
         }
+      }
+
+      if (lastErr) {
+        throw lastErr;
       } else {
-        await vapiInstance.start(assistantConfig as any);
+        throw new Error('Could not establish voice call with configured API keys.');
       }
     } catch (err: any) {
       console.error('Failed to initialize Voice Agent:', err);
@@ -142,7 +178,7 @@ export function VoiceRoastWidget({ analysis }: VoiceRoastWidgetProps) {
   };
 
   const handleStartCall = () => {
-    initAndStartCall(publicKey || 'd7be711a-6328-45f3-85a5-dfb07c856a67', assistantId || '2ca26d7b-2466-433f-8201-8a9d2df26d1d');
+    initAndStartCall();
   };
 
   const handleToggleMute = () => {
