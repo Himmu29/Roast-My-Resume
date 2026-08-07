@@ -3,17 +3,62 @@ import Layout from '../layouts/Layout.astro';
 import Header from '../components/layout/Header.astro';
 import Footer from '../components/layout/Footer.astro';
 import { FileDropzone } from '../components/upload/FileDropzone';
-import { Flame, Sparkles, ShieldCheck, Mic, Zap, CheckCircle } from 'lucide-react';
+import { Flame, Sparkles, ShieldCheck, Mic, Zap, CheckCircle, HelpCircle, Target, Award, UserCheck } from 'lucide-react';
+
+const faqSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: [
+    {
+      '@type': 'Question',
+      name: 'Is Roast My Resume AI completely free to use?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: 'Yes! You can roast my resume and roast my cv online with zero sign-up requirements. Simply upload your document and get instant AI feedback.',
+      },
+    },
+    {
+      '@type': 'Question',
+      name: 'What makes this AI resume roaster different from standard resume builders?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: 'Traditional resume builders only format text. Roast My Resume AI acts as an aggressive career coach, auditing your real experience against recruiter standards and offering live voice chat.',
+      },
+    },
+    {
+      '@type': 'Question',
+      name: 'Does Roast My CV AI store or share my personal data?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: 'No. We value your privacy. Uploaded PDF and DOCX files are processed securely in real-time and never sold or shared with third parties.',
+      },
+    },
+    {
+      '@type': 'Question',
+      name: 'How does the AI Voice Recruiter work?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: 'After your resume audit, you can jump into the Live AI Voice Lounge to speak directly with an AI coach pre-loaded with your personalized analysis.',
+      },
+    },
+  ],
+};
 ---
 
-<Layout>
+<Layout
+  title="Roast My Resume AI - Free AI Resume Roaster & ATS Score Checker"
+  description="Roast my resume with instant AI feedback! Get a funny & constructive resume roast, estimated ATS compatibility score, STAR bullet point rewrites, and live voice chat with an AI recruiter."
+  keywords="roast my resume, roast my cv, roast my resume ai, ai resume roaster, roast my cv ai, resume audit, ats resume checker, AI career coach"
+>
+  <script type="application/ld+json" set:html={JSON.stringify(faqSchema)} />
+
   <Header />
 
   <main class="flex-1 w-full bg-grid-pattern relative overflow-hidden">
     <!-- Hero Radial Mesh Glow -->
     <div class="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] hero-glow-cyan pointer-events-none -z-10"></div>
 
-    <div class="max-w-5xl mx-auto px-2 sm:px-6 py-8 sm:py-12 space-y-12">
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 py-8 sm:py-12 space-y-16">
       <!-- Hero Header Section -->
       <section class="text-center space-y-6 max-w-3xl mx-auto">
         <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-neutral-200 bg-white/90 shadow-xs text-xs font-mono text-neutral-700 backdrop-blur-md">
@@ -25,7 +70,7 @@ import { Flame, Sparkles, ShieldCheck, Mic, Zap, CheckCircle } from 'lucide-reac
           <span class="text-gradient-hero">Roasted. Fixed. Hired.</span>
         </h1>
 
-        <p className="text-base sm:text-lg text-neutral-600 max-w-2xl mx-auto leading-relaxed font-normal">
+        <p class="text-base sm:text-lg text-neutral-600 max-w-2xl mx-auto leading-relaxed font-normal">
           Upload your resume (`.pdf` or `.docx`), target your dream role, and get an instant AI roast, estimated ATS compatibility score, and actionable STAR bullet rewrites — then speak live with our AI voice recruiter.
         </p>
 
@@ -52,7 +97,7 @@ import { Flame, Sparkles, ShieldCheck, Mic, Zap, CheckCircle } from 'lucide-reac
       </section>
 
       <!-- Feature Grid Cards -->
-      <section class="grid grid-cols-1 md:grid-cols-3 gap-6 pt-6">
+      <section class="grid grid-cols-1 md:grid-cols-3 gap-6 pt-2">
         <div class="vercel-card p-6 space-y-3">
           <div class="w-10 h-10 rounded-xl bg-orange-50 border border-orange-200/60 flex items-center justify-center text-orange-600">
             <Flame class="w-5 h-5 fill-orange-500" />
@@ -83,8 +128,143 @@ import { Flame, Sparkles, ShieldCheck, Mic, Zap, CheckCircle } from 'lucide-reac
           </p>
         </div>
       </section>
+
+      <!-- Detailed SEO Content Guide (600+ Words) -->
+      <article class="border-t border-neutral-200/80 pt-14 space-y-12 text-neutral-800">
+        <!-- SEO Header & Introduction -->
+        <header class="space-y-4 max-w-3xl">
+          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-50 text-amber-700 border border-amber-200 text-xs font-mono font-semibold">
+            <Sparkles className="w-3.5 h-3.5" />
+            Comprehensive Guide to AI Resume Optimization
+          </div>
+          <h2 class="text-2xl sm:text-3xl font-extrabold tracking-tight text-neutral-900">
+            Roast My Resume AI: Transform Your CV Into an Interview Magnet
+          </h2>
+          <p class="text-sm sm:text-base text-neutral-600 leading-relaxed">
+            Are you submitting dozens of job applications every week only to receive automated rejection emails or complete silence? You are not alone. Studies show that over <strong>75% of job applications are filtered out by Applicant Tracking Systems (ATS)</strong> before a human recruiter ever sees them. Welcome to <strong>Roast My Resume AI</strong> — the premier <strong>ai resume roaster</strong> engineered to help job seekers fix fluff, boost ATS scores, and land top-tier job interviews fast.
+          </p>
+          <p class="text-sm text-neutral-600 leading-relaxed">
+            Whether you want to <strong>roast my resume</strong> for a brutal reality check or <strong>roast my cv</strong> to tailor your career narrative for executive roles, our free platform delivers instant feedback powered by advanced multimodal artificial intelligence.
+          </p>
+        </header>
+
+        <!-- Why You Need an AI Resume Roaster -->
+        <section class="space-y-4">
+          <h2 class="text-xl sm:text-2xl font-bold text-neutral-900 flex items-center gap-2">
+            <Target className="w-5 h-5 text-orange-500" />
+            Why You Need an AI Resume Roaster in Today's Job Market
+          </h2>
+          <p class="text-sm text-neutral-600 leading-relaxed">
+            Modern hiring managers spend an average of just 6 seconds scanning a resume. If your document relies on vague responsibility descriptions, generic buzzwords ("hardworking team player"), or unquantified achievements, your application is instantly discarded. Using a dedicated <strong>roast my resume ai</strong> tool gives you an unfair advantage by revealing exactly how recruiters and screening algorithms evaluate your background.
+          </p>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+            <div class="p-5 rounded-2xl bg-neutral-50 border border-neutral-200/80 space-y-2">
+              <h3 class="font-bold text-sm text-neutral-900 flex items-center gap-2">
+                <Flame className="w-4 h-4 text-orange-500" />
+                Unfiltered, Honest Feedback
+              </h3>
+              <p class="text-xs text-neutral-500 leading-relaxed">
+                Friends and colleagues spare your feelings. Our <strong>ai resume roaster</strong> provides hilarious yet deeply constructive critiques targeting weak phrasing, passive voice, and formatting errors.
+              </p>
+            </div>
+
+            <div class="p-5 rounded-2xl bg-neutral-50 border border-neutral-200/80 space-y-2">
+              <h3 class="font-bold text-sm text-neutral-900 flex items-center gap-2">
+                <ShieldCheck className="w-4 h-4 text-blue-500" />
+                Estimated ATS Compatibility Score
+              </h3>
+              <p class="text-xs text-neutral-500 leading-relaxed">
+                When you <strong>roast my cv ai</strong> with our tool, we analyze keyword alignment, section formatting, and metric density to score how well your resume matches your target job title.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        <!-- How Roast My CV AI Works -->
+        <section class="space-y-4">
+          <h2 class="text-xl sm:text-2xl font-bold text-neutral-900 flex items-center gap-2">
+            <Zap className="w-5 h-5 text-amber-500" />
+            How Roast My Resume AI Audits & Fixes Your Career Document
+          </h2>
+          <p class="text-sm text-neutral-600 leading-relaxed">
+            Unlike static resume templates that only change font styles, <strong>Roast My Resume AI</strong> performs a deep semantic analysis of your career achievements. Here is how our four-pillar roast and fix process works:
+          </p>
+
+          <ol class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs font-medium">
+            <li class="p-4 rounded-xl bg-white border border-neutral-200 space-y-1 shadow-xs">
+              <span class="font-mono text-xs font-bold text-amber-600 uppercase">Step 1: Document Upload & Parsing</span>
+              <p class="text-neutral-600">Upload your PDF or DOCX file. Our engine extracts text, layout structures, and raw experience buffers without requiring any account creation.</p>
+            </li>
+            <li class="p-4 rounded-xl bg-white border border-neutral-200 space-y-1 shadow-xs">
+              <span class="font-mono text-xs font-bold text-amber-600 uppercase">Step 2: Role-Targeted AI Roast</span>
+              <p class="text-neutral-600">Enter your desired position (e.g., Software Engineer, Marketing Manager). The AI evaluates your resume against recruiter benchmarks for that exact role.</p>
+            </li>
+            <li class="p-4 rounded-xl bg-white border border-neutral-200 space-y-1 shadow-xs">
+              <span class="font-mono text-xs font-bold text-amber-600 uppercase">Step 3: STAR Rewrites & Keyword Audit</span>
+              <p class="text-neutral-600">Receive side-by-side bullet point improvements using the proven STAR (Situation, Task, Action, Result) framework alongside a list of missing industry keywords.</p>
+            </li>
+            <li class="p-4 rounded-xl bg-white border border-neutral-200 space-y-1 shadow-xs">
+              <span class="font-mono text-xs font-bold text-amber-600 uppercase">Step 4: Interactive Voice Coach Lounge</span>
+              <p class="text-neutral-600">Speak live with an AI Voice Recruiter to practice your interview pitch, discuss weaknesses, and ask real-time career advice.</p>
+            </li>
+          </ol>
+        </section>
+
+        <!-- Frequently Asked Questions (FAQ) -->
+        <section class="space-y-6 pt-4 border-t border-neutral-200/80">
+          <div class="space-y-1">
+            <h2 class="text-xl sm:text-2xl font-bold text-neutral-900 flex items-center gap-2">
+              <HelpCircle className="w-5 h-5 text-purple-500" />
+              Frequently Asked Questions About AI Resume Roasting
+            </h2>
+            <p class="text-xs text-neutral-500 font-mono">
+              Everything you need to know about roasting your resume and fixing ATS flaws.
+            </p>
+          </div>
+
+          <div class="space-y-4">
+            <div class="p-5 rounded-2xl bg-neutral-50 border border-neutral-200/80 space-y-2">
+              <h3 class="font-bold text-sm text-neutral-900">
+                Is Roast My Resume AI completely free to use?
+              </h3>
+              <p class="text-xs text-neutral-600 leading-relaxed">
+                Yes! You can <strong>roast my resume</strong> and <strong>roast my cv</strong> online completely free with zero account sign-up requirements. Simply upload your document and receive an instant AI roast, ATS evaluation score, and action plan.
+              </p>
+            </div>
+
+            <div class="p-5 rounded-2xl bg-neutral-50 border border-neutral-200/80 space-y-2">
+              <h3 class="font-bold text-sm text-neutral-900">
+                What makes this AI resume roaster different from standard resume builders?
+              </h3>
+              <p class="text-xs text-neutral-600 leading-relaxed">
+                Traditional resume builders only format text into static templates. <strong>Roast My Resume AI</strong> acts as a proactive career coach — auditing your actual accomplishments against recruiter standards, providing STAR metric rewrites, and offering a live WebRTC AI voice lounge to practice talking through your resume.
+              </p>
+            </div>
+
+            <div class="p-5 rounded-2xl bg-neutral-50 border border-neutral-200/80 space-y-2">
+              <h3 class="font-bold text-sm text-neutral-900">
+                Does Roast My CV AI store or share my personal data?
+              </h3>
+              <p class="text-xs text-neutral-600 leading-relaxed">
+                No. We respect your privacy. Uploaded PDF and DOCX files are processed securely in real-time solely to generate your roast and ATS analysis. Your resume data is never sold, shared, or retained for commercial marketing.
+              </p>
+            </div>
+
+            <div class="p-5 rounded-2xl bg-neutral-50 border border-neutral-200/80 space-y-2">
+              <h3 class="font-bold text-sm text-neutral-900">
+                How does the AI Voice Recruiter work?
+              </h3>
+              <p class="text-xs text-neutral-600 leading-relaxed">
+                After your <strong>roast my resume ai</strong> audit is generated, you can launch the Interactive Voice Lounge. Our AI Voice Recruiter connects directly in your browser, pre-loaded with your specific resume analysis, allowing you to ask questions and practice interview answers out loud.
+              </p>
+            </div>
+          </div>
+        </section>
+      </article>
     </div>
   </main>
 
   <Footer />
 </Layout>
+
